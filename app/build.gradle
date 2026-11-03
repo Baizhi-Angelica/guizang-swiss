@@ -1,0 +1,47 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'io.github.op7418.guizangtv'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'io.github.op7418.guizangtv'
+        minSdk 26
+        targetSdk 34
+        versionCode 7
+        versionName '0.5.0-swiss'
+    }
+    signingConfigs {
+        local {
+            if (System.getenv('GUIZANG_DEBUG_KEYSTORE')) {
+                storeFile file(System.getenv('GUIZANG_DEBUG_KEYSTORE'))
+                storePassword System.getenv('GUIZANG_DEBUG_STORE_PASSWORD') ?: 'guizangtv'
+                keyAlias System.getenv('GUIZANG_DEBUG_KEY_ALIAS') ?: 'guizang-debug'
+                keyPassword System.getenv('GUIZANG_DEBUG_KEY_PASSWORD') ?: 'guizangtv'
+            }
+        }
+        release {
+            if (System.getenv('GUIZANG_KEYSTORE')) {
+                storeFile file(System.getenv('GUIZANG_KEYSTORE'))
+                storePassword System.getenv('GUIZANG_STORE_PASSWORD')
+                keyAlias System.getenv('GUIZANG_KEY_ALIAS') ?: 'guizang-tv'
+                keyPassword System.getenv('GUIZANG_KEY_PASSWORD') ?: System.getenv('GUIZANG_STORE_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            if (System.getenv('GUIZANG_DEBUG_KEYSTORE')) signingConfig signingConfigs.local
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv('GUIZANG_KEYSTORE')) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+dependencies { testImplementation 'junit:junit:4.13.2' }

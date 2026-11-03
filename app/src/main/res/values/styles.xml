@@ -1,0 +1,33 @@
+<resources>
+    <color name="swiss_paper">#FFE9E2D1</color>
+    <color name="swiss_paper_top">#FFF4EFE2</color>
+    <color name="swiss_night">#FF0A0A0B</color>
+    <color name="swiss_night_top">#FF131315</color>
+
+    <style name="Theme.GuiZangTV" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Swiss home, warm paper. Window background matches the board so there is no flash. -->
+    <style name="Theme.GuiZangTV.Paper" parent="android:Theme.Material.Light.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/swiss_paper</item>
+        <item name="android:colorBackground">@color/swiss_paper</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Swiss home, deep night. -->
+    <style name="Theme.GuiZangTV.Night" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/swiss_night</item>
+        <item name="android:colorBackground">@color/swiss_night</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <string name="app_name">归藏电视</string>
+    <string name="accessibility_description">在小米桌面出现时自动切回归藏电视，让三个 HDMI 入口保持在前台。只读取窗口的包名，不读取屏幕内容。</string>
+</resources>

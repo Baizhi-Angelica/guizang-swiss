@@ -1,0 +1,81 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Granted as an app-op over adb; it lets the boot receiver start the home. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <queries>
+        <intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent>
+        <intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LEANBACK_LAUNCHER" /></intent>
+        <intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.HOME" /></intent>
+        <package android:name="com.xiaomi.mitv.tvplayer" />
+        <package android:name="com.xiaomi.mitv.settings" />
+        <package android:name="com.mitv.tvhome" />
+    </queries>
+    <application android:label="@string/app_name" android:icon="@drawable/ic_launcher"
+        android:banner="@drawable/banner" android:theme="@style/Theme.GuiZangTV"
+        android:allowBackup="false" android:supportsRtl="true">
+
+        <!-- The Swiss home. Declared as HOME so it can be the device's default launcher. -->
+        <activity android:name=".SwissHomeActivity" android:exported="true"
+            android:launchMode="singleTask" android:stateNotNeeded="true"
+            android:excludeFromRecents="true" android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|keyboard|keyboardHidden|uiMode"
+            android:screenOrientation="landscape">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Previous full launcher, kept for fallback and reference. No launcher entry. -->
+        <activity android:name=".FrameHomeActivity" android:exported="true"
+            android:launchMode="singleTask" android:stateNotNeeded="true"
+            android:excludeFromRecents="true" android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode"
+            android:screenOrientation="landscape" />
+
+        <!-- Xiaomi's package-based startup hook resolves INFO before LAUNCHER. -->
+        <activity android:name=".BootGateActivity" android:exported="true"
+            android:excludeFromRecents="true" android:noHistory="true" android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.INFO" />
+            </intent-filter>
+        </activity>
+
+        <!-- Palette switch for on-device design review; stores one preference. -->
+        <receiver android:name=".SwissThemeReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="io.github.op7418.guizangtv.SWISS_THEME" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Xiaomi resolves Home to its own launcher; boot is handled by this receiver. -->
+        <receiver android:name=".SwissBootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="io.github.op7418.guizangtv.SWISS_BOOT_SHOW" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Watches only window package names and takes the stock home back. -->
+        <service android:name=".SwissAccessibilityService" android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice"
+                android:resource="@xml/swiss_accessibility" />
+        </service>
+    </application>
+</manifest>
