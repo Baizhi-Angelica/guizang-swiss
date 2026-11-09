@@ -25,6 +25,9 @@ public final class SwissAccessibilityService extends AccessibilityService {
     private static final long SETTLE_MS = 350L;
     /** Any service connect inside this window after boot counts as the boot launch. */
     private static final long BOOT_GRACE_MS = 5 * 60_000L;
+    /** Inside this window every Xiaomi launcher page is covered, including the
+     *  "my apps" page the launcher restores after a reboot. */
+    private static final long BOOT_WINDOW_MS = 3 * 60_000L;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable pending;
@@ -37,7 +40,9 @@ public final class SwissAccessibilityService extends AccessibilityService {
         if (!STOCK.equals(pkg.toString())) return;
         String name = cls.toString();
         Log.i(TAG, "stock window " + name);
-        if (!name.endsWith(".MainActivityUserMode") && !name.equals("com.mitv.tvhome.MainActivity")) return;
+        boolean home = name.endsWith(".MainActivityUserMode") || name.equals("com.mitv.tvhome.MainActivity");
+        boolean bootWindow = SystemClock.elapsedRealtime() < BOOT_WINDOW_MS;
+        if (!home && !(bootWindow && name.startsWith("com.mitv.tvhome."))) return;
         if (SwissHandoff.take(this)) {
             Log.i(TAG, "stock home allowed once");
             return;
@@ -60,6 +65,7 @@ public final class SwissAccessibilityService extends AccessibilityService {
 
     @Override protected void onServiceConnected() {
         Log.i(TAG, "connected at " + SystemClock.elapsedRealtime() + "ms");
+        SwissGuard.ensure(this);
         // The service is bound a little after the stock launcher has already
         // drawn its first window, so a boot that misses the window event is
         // covered by these two attempts.

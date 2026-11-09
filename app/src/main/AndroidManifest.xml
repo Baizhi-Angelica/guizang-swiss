@@ -3,6 +3,11 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Granted as an app-op over adb; it lets the boot receiver start the home. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Granted over adb (pm grant). Lets the app put its accessibility service back
+         and keep ADB on after the firmware resets them; same grant Aerial TV uses
+         on this model. -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <queries>
@@ -76,6 +81,16 @@
             </intent-filter>
             <meta-data android:name="android.accessibilityservice"
                 android:resource="@xml/swiss_accessibility" />
+        </service>
+
+        <!-- Second boot entry point: bound by the system even for an adb-installed app,
+             repairs the guard and shows the home shortly after boot. -->
+        <service android:name=".SwissRevivalListener" android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
     </application>
 </manifest>

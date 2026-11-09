@@ -37,6 +37,7 @@ public final class SwissHomeActivity extends Activity implements SwissBoard.List
         theme = resolveTheme(SwissPalette.saved(this));
         setTheme(theme == 1 ? R.style.Theme_GuiZangTV_Night : R.style.Theme_GuiZangTV_Paper);
         super.onCreate(state);
+        SwissGuard.ensure(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         immersive();
         board = new SwissBoard(this, SwissPalette.of(theme), this);
@@ -55,6 +56,7 @@ public final class SwissHomeActivity extends Activity implements SwissBoard.List
             board.palette(SwissPalette.of(theme));
             board.requestFocus();
             board.playIntro();
+            board.resumeFocus();
         }
     }
 

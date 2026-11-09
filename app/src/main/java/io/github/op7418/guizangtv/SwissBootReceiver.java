@@ -26,6 +26,7 @@ public final class SwissBootReceiver extends BroadcastReceiver {
     private static final long DELAY_MS = 15_000L;
 
     @Override public void onReceive(Context context, Intent intent) {
+        SwissGuard.ensure(context);
         String action = intent.getAction();
         if (ACTION_SHOW.equals(action)) {
             show(context);

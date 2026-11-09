@@ -48,6 +48,7 @@ final class SwissBoard extends View {
 
     private final float[] focusMix = new float[SwissFrame.EXIT + 1];
     private int focus;
+    private int lastSource;
     private ValueAnimator focusAnim;
     private ValueAnimator introAnim;
     private float intro = 1f;
@@ -99,6 +100,7 @@ final class SwissBoard extends View {
 
     void focusAt(int target, boolean animate) {
         int next = Math.max(0, Math.min(SwissFrame.EXIT, target));
+        if (next < SwissFrame.SOURCE_COUNT) lastSource = next;
         focus = next;
         float[] from = focusMix.clone();
         float[] to = new float[SwissFrame.EXIT + 1];
@@ -118,6 +120,13 @@ final class SwissBoard extends View {
             invalidate();
         });
         focusAnim.start();
+    }
+
+    /** Coming back from the stock home should not leave OK pointing at "exit". */
+    void resumeFocus() {
+        if (focus == SwissFrame.EXIT) {
+            focusAt(Math.max(0, Math.min(SwissFrame.SOURCE_COUNT - 1, lastSource)), false);
+        }
     }
 
     boolean key(KeyEvent event) {

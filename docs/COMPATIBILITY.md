@@ -81,3 +81,18 @@
 - 已停留在小米桌面时再按 Home 不会跳回瑞士桌面（没有新的窗口状态事件）。
 - 真实「信号源接入自动进入」未在本次操作中触发，只核对了开关值。
 - 未 root；所有改动可逆，回滚见 [瑞士桌面文档](SWISS-HOME.md) 与 `scripts/tv-restore.ps1`。
+
+## 开机加固与 root 复核（2026-11-09）
+
+现象：使用几天后完整重启会回到小米桌面，原因是系统把本应用从
+`enabled_accessibility_services` 里清掉了。
+
+- 0.5.1 增加：`WRITE_SECURE_SETTINGS` 守护（自动把无障碍服务写回、把 `adb_enabled` 写回 1）、
+  通知监听 `SwissRevivalListener` 作为第二条开机入口、重启后 3 分钟内接管小米桌面所有页面、
+  `str_killbackgroud_pkg_white_list` 待机白名单。
+- 两次完整重启实测（不碰电视）：开机约 20.8 秒通知监听拉起瑞士桌面，无障碍随后接管；
+  小米桌面「我的应用」页面出现约 0.3 秒后被覆盖；ADB 在开机 60–70 秒后自行恢复。
+- root 复核：`verifiedbootstate=green`、`build.type=user`、`ro.secure=1`、`ro.debuggable=0`、
+  SELinux Enforcing、无 `su`、无 `ro.oem_unlock_supported`；只有 Wi-Fi ADB，fastboot/BROM 需要 USB 直连，
+  MT9655 无公开可用漏洞。结论：没有可行的远程 root 路径，不做尝试；同型号 Aerial TV 也走守护方案。
+

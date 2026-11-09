@@ -103,6 +103,58 @@ adb shell settings put secure accessibility_enabled 1
   （从小米桌面打开任意应用后按 Home 即可回来，或从「我的应用」打开「归藏电视」）；
 - 小米桌面仍然保留，用于偶尔进入应用商店或系统功能；本项目不删除、不禁用任何桌面组件。
 
+## 2026-11-09：开机加固（0.5.1）
+
+用了几天后出现「重启又回到小米桌面」。排查结果：无障碍服务从
+`enabled_accessibility_services` 里消失了（系统会不定时清掉第三方应用的无障碍项），
+于是开机没有任何东西接管。按同机型 [Aerial TV](https://github.com/pengchujin/aerial-tv)
+的成熟做法补了三层：
+
+| 机制 | 作用 |
+| --- | --- |
+| `SwissGuard`（需 `WRITE_SECURE_SETTINGS`） | 应用每次启动 / 服务绑定 / 收到广播时，把无障碍服务追加回去，并重新打开 ADB |
+| `SwissRevivalListener`（通知监听） | 系统在开机约 20 秒时绑定它；它修复守护并拉起瑞士桌面，是无障碍被清掉时的第二条启动路径 |
+| 开机窗口接管 | 重启后 3 分钟内，`com.mitv.tvhome` 的所有页面（包括桌面恢复的「我的应用」）都会被瑞士桌面覆盖 |
+| 待机白名单 | `str_killbackgroud_pkg_white_list` 加入本应用，避免深睡/待机时被 `killAllThirdAppForStr()` 杀掉 |
+
+一次性授权（已在本机执行，`scripts/tv-setup.ps1` 会自动做）：
+
+```sh
+adb shell pm grant io.github.op7418.guizangtv android.permission.WRITE_SECURE_SETTINGS
+adb shell appops set io.github.op7418.guizangtv WRITE_SETTINGS allow
+adb shell appops set io.github.op7418.guizangtv SYSTEM_ALERT_WINDOW allow
+adb shell cmd notification allow_listener \
+  io.github.op7418.guizangtv/io.github.op7418.guizangtv.SwissRevivalListener
+adb shell settings put system str_killbackgroud_pkg_white_list io.github.op7418.guizangtv
+```
+
+实测（2026-11-09，两次完整重启，全程不碰电视）：
+
+- 开机约 20.8 秒通知监听绑定并拉起瑞士桌面，随后无障碍接管；小米桌面的「我的应用」页面
+  出现后约 0.3 秒被覆盖；
+- ADB 调试口在开机约 60–70 秒后自行恢复（守护把 `adb_enabled` 写回 1），不再需要手动打开；
+- `enabled_accessibility_services`、通知监听、待机白名单在重启后都保留。
+
+已知限制：如果系统同时清掉无障碍**和**通知监听授权，应用就完全没有开机入口，需要重新执行
+上面的授权命令。这种情况目前没有遇到。
+
+## 关于 root
+
+2026-11-09 复核了这台机器的状态，结论是**没有可行的远程 root 路径**，不建议尝试：
+
+- `ro.boot.verifiedbootstate=green`（验证启动、bootloader 锁定）、`ro.build.type=user`、
+  `ro.secure=1`、`ro.debuggable=0`、SELinux `Enforcing`，系统里没有 `su`；
+- 没有 `ro.oem_unlock_supported`，小米电视不提供官方解锁；
+- 电脑只能通过 Wi-Fi ADB 连接，fastboot / MediaTek BROM 都需要 USB 直连电视主板，
+  而且 MT9655 的 BROM 没有公开的可用漏洞；
+- 近年的 Android 14 内核 CVE（如 CVE-2024-53104 USB、CVE-2024-50264 AF_VSOCK 一类）
+  都需要本地恶意应用或物理 USB 设备，没有针对这台电视固件的公开利用链，硬试有变砖风险；
+- 同型号的 Aerial TV 项目同样不做 root，走的就是上面的守护方案。
+
+真正要「强制默认桌面」的话，非 root 的等价手段已经做到：开机进入瑞士桌面、Home 键回瑞士桌面、
+应用被系统清掉后能自愈。等哪天有人放出 MT9655 的解锁/刷机方案，再用 root 把小米桌面组件
+`pm disable` 掉会更彻底（退出按钮届时需要换成打开信号源面板）。
+
 ## 保留的小米功能
 
 | 设置 | 值 | 说明 |
